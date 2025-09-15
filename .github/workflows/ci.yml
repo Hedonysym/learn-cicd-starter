@@ -39,4 +39,7 @@ jobs:
             
       - name: Format
         run: go fmt ./...
+      
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
         
