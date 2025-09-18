@@ -1,8 +1,3 @@
-#!/bin/bash
-
-if [ -f .env ]; then
-    source .env
-fi
-
-cd sql/schema
-goose turso $DATABASE_URL up
+#!/usr/bin/env bash
+set -euo pipefail
+goose -dir ./sql/schema postgres "$DATABASE_URL" up
