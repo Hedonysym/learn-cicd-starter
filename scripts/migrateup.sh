@@ -1,3 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
-goose -dir ./sql/schema postgres "$DATABASE_URL" up
+
+if [ -z "${DATABASE_URL:-}" ]; then
+  echo "DATABASE_URL is not set"
+  exit 1
+fi
+
+"$(go env GOPATH)/bin/goose" -dir ./sql/schema sqlite "$DATABASE_URL" up
