@@ -29,18 +29,25 @@ jobs:
       with:
           go-version: "1.23.0"
 
-    - name: Install and migrate (Turso)
+    - name: Install Turso and migrate (debug)
       env:
         TURSO_URL: ${{ secrets.DATABASE_URL }}
       run: |
         set -euo pipefail
+        echo "Home: $HOME"
         curl -fsSL https://get.tur.so/install.sh | bash
+        echo "Contents of ~/.turso:"
+        ls -la "$HOME/.turso" || true
+        echo "Contents of ~/.turso/bin:"
+        ls -la "$HOME/.turso/bin" || true
         export PATH="$HOME/.turso/bin:$PATH"
+        echo "PATH=$PATH"
+        which turso || true
         turso --version
         if [ -z "${TURSO_URL:-}" ]; then echo "DATABASE_URL is empty"; exit 1; fi
         for f in sql/schema/*.sql; do
-          echo "Applying $f"
-          turso db shell "$TURSO_URL" < "$f"
+        echo "Applying $f"
+        turso db shell "$TURSO_URL" < "$f"
         done
 
     - name: Build
