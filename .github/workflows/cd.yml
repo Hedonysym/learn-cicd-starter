@@ -33,11 +33,9 @@ jobs:
       run: curl -fsSL https://get.tur.so/install.sh | bash
 
     - name: migrate db (turso)
-      env:
-      TURSO_URL: ${{ secrets.DATABASE_URL }}
       run: |
         set -euo pipefail
-        if [ -z "${TURSO_URL:-}" ]; then
+        if [ -z "${DATABASE_URL:-}" ]; then
           echo "DATABASE_URL is empty"
           exit 1
         fi
