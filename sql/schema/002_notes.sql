@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE notes (
+CREATE TABLE if not exists notes (
     id TEXT PRIMARY KEY,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
