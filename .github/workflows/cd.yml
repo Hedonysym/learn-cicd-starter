@@ -3,7 +3,7 @@ name: cd
 on:
   push:
     branches: [main]
-  
+
 jobs:
   deploy:
     name: Deploy
@@ -12,55 +12,33 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
-    - name: check DB URL
-      run: |
-        if [ -z "${DATABASE_URL:-}" ]; then
-          echo "DATABASE_URL is empty"
-          exit 1
-        else
-          echo "DATABASE_URL present"
-        fi
+      - name: Check out code
+        uses: actions/checkout@v4
 
-    - name: Check out code
-      uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.1"
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-          go-version: "1.23.0"
+      - name: Build app
+        run: ./scripts/buildprod.sh
 
-    - name: Install Turso and migrate
-      env:
-        TURSO_URL: ${{ secrets.DATABASE_URL }}
-      run: |
-        set -euo pipefail
-        curl -fsSL https://get.tur.so/install.sh | bash
-        "$HOME/.turso/turso" --version
-        if [ -z "${TURSO_URL:-}" ]; then echo "DATABASE_URL is empty"; exit 1; fi
-        for f in sql/schema/*.sql; do
-        echo "Applying $f"
-        "$HOME/.turso/turso" db shell "$TURSO_URL" < "$f"
-        done
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-    - name: Build
-      run: scripts/buildprod.sh
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
 
-    - id: 'auth'
-      uses: 'google-github-actions/auth@v2'
-      with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+      - name: Build and push Docker image
+        run: gcloud builds submit --tag REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG .
 
-    - name: 'Set up Cloud SDK'
-      uses: 'google-github-actions/setup-gcloud@v3'
+      - name: Install goose
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
-    - name: 'Use gcloud CLI'
-      run: 'gcloud info'
-    
-    - name: git diff
-      run: git diff HEAD
+      - name: Run migrations
+        run: ./scripts/migrateup.sh
 
-    - name: push
-      run: gcloud builds submit --tag us-central1-docker.pkg.dev/notely-472322/notely-ar-repo/notely:latest .
-
-    - name: Deploy to Cloud Run
-      run: gcloud run deploy notely --image us-central1-docker.pkg.dev/notely-472322/notely-ar-repo/notely:latest --region us-central1 --allow-unauthenticated --project notely-472322 --max-instances=4
+      - name: Deploy to Cloud Run
+        run: gcloud run deploy notely --image REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG --region REGION --allow-unauthenticated --project PROJECT_ID --max-instances=4
