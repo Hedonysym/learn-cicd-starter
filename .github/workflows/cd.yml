@@ -30,7 +30,9 @@ jobs:
           go-version: "1.23.0"
 
     - name: Install Turso CLI
-      run: curl -fsSL https://get.tur.so/install.sh | bash
+      run: |
+        curl -fsSL https://get.tur.so/install.sh | bash
+        echo "$HOME/.turso/bin" >> $GITHUB_PATH
 
     - name: migrate db (turso)
       run: |
