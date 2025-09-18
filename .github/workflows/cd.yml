@@ -40,7 +40,7 @@ jobs:
           exit 1
         fi
         for f in sql/schema/*.sql; do
-          turso db shell "$TURSO_URL" < "$f"
+          turso db shell "$DATABASE_URL" < "$f"
           done
 
     - name: Build
@@ -56,9 +56,6 @@ jobs:
 
     - name: 'Use gcloud CLI'
       run: 'gcloud info'
-    
-    - name: migrate db
-      run: ./scripts/migrateup.sh
     
     - name: git diff
       run: git diff HEAD
