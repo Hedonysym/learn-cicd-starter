@@ -35,15 +35,18 @@ jobs:
         echo "$HOME/.turso/bin" >> $GITHUB_PATH
 
     - name: migrate db (turso)
+      env:
+        TURSO_URL: ${{ secrets.DATABASE_URL }}
       run: |
         set -euo pipefail
-        if [ -z "${DATABASE_URL:-}" ]; then
-          echo "DATABASE_URL is empty"
-          exit 1
+        if [ -z "${TURSO_URL:-}" ]; then
+          echo "DATABASE_URL is empty"; exit 1
         fi
+        turso --version
         for f in sql/schema/*.sql; do
-          turso db shell "$DATABASE_URL" < "$f"
-          done
+          echo "Applying $f"
+          turso db shell "$TURSO_URL" < "$f"
+        done
 
     - name: Build
       run: scripts/buildprod.sh
