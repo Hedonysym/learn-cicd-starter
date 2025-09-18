@@ -1,9 +1,8 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-if [ -z "${DATABASE_URL:-}" ]; then
-  echo "DATABASE_URL is not set"
-  exit 1
+if [ -f .env ]; then
+    source .env
 fi
 
-"$(go env GOPATH)/bin/goose" -dir ./sql/schema sqlite "$DATABASE_URL" up
+cd sql/schema
+goose turso $DATABASE_URL up
