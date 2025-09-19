@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -26,6 +27,9 @@ type apiConfig struct {
 var staticFiles embed.FS
 
 func main() {
+	// go
+	u, _ := url.Parse(os.Getenv("DATABASE_URL"))
+	log.Printf("DB host=%s scheme=%s", u.Host, u.Scheme)
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Printf("warning: assuming default configuration. .env unreadable: %v", err)
