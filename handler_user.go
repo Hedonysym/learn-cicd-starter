@@ -48,6 +48,7 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Couldn't get user", err)
 		return
 	}
+	w.WriteHeader(201)
 
 	userResp, err := databaseUserToUser(user)
 	if err != nil {
